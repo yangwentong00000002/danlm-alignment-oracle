@@ -264,7 +264,7 @@ def main() -> None:
         tokenized = call_first_success(
             agent,
             "_tokenize",
-            [(obs, round_obj), (obs,), tuple()],
+            [(round_obj,), (round_obj, obs), (obs, round_obj), (obs,), tuple()],
         )
         token_ids, seq_len = normalize_tokenize_result(tokenized)
         selected_index = int(np.asarray(q_values).argmax())
