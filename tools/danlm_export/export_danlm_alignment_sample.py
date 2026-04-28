@@ -75,8 +75,11 @@ def matrix(value: Any, name: str) -> list[list[float]]:
     data = to_python(value)
     if isinstance(data, list) and len(data) == 1 and isinstance(data[0], list):
         data = data[0]
+    if isinstance(data, list) and data and all(isinstance(item, (int, float)) for item in data):
+        data = [data]
     if not isinstance(data, list) or not all(isinstance(row, list) for row in data):
-        raise TypeError(f"{name} is not a matrix-like tensor")
+        raise TypeError(f"{name} is not a matrix-like tensor: "
+                        f"type={type(data)!r} value={repr(data)[:300]}")
     return data
 
 
@@ -263,7 +266,13 @@ def main() -> None:
         agent = agents[player]
 
         q_values = flatten_batch_vector(agent.get_q_values(obs, round_obj), "q_values")
-        legal_plays = matrix(obs.legal_plays, "legal_plays")
+        try:
+            legal_plays = matrix(obs.legal_plays, "legal_plays")
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to normalize legal_plays at step={step} player={player} "
+                f"type={type(obs.legal_plays)!r}"
+            ) from exc
         hand = flatten_batch_vector(round_obj.state.hands[player], "hand")
         tokenized = call_first_success(
             agent,
