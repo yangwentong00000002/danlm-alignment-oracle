@@ -188,7 +188,11 @@ def normalize_tokenize_result(value: Any) -> tuple[list[int], int]:
     data = to_python(value)
     token_ids: Any
     seq_len: Any = None
-    if isinstance(data, (tuple, list)) and len(data) >= 2:
+    if isinstance(data, tuple) and len(data) >= 2:
+        token_ids, seq_len = data[0], data[1]
+    elif (isinstance(data, list) and len(data) == 2
+          and isinstance(data[0], list)
+          and not all(isinstance(item, (int, float)) for item in data)):
         token_ids, seq_len = data[0], data[1]
     else:
         token_ids = data
