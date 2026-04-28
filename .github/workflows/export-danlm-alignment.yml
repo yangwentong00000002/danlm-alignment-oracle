@@ -64,9 +64,23 @@ jobs:
             --seed "$DANLM_SEED" \
             --device cpu
 
+      - name: Diagnose original and portable DanLM runtimes
+        env:
+          DANLM_SEED: ${{ inputs.seed || '20260427' }}
+        run: |
+          source tools/danlm_export/.venv/bin/activate
+          PYTHONPATH=. python tools/danlm_export/diagnose_danlm_runtime.py \
+            --danlm-dir res/DanLM-main \
+            --checkpoint res/DanLM-main/ckpts/DanLM_v1/dansformer_v1_best_eval.pt \
+            --output tools/danlm_export/work/danlm_runtime_diagnostics.json \
+            --seed "$DANLM_SEED" \
+            --device cpu
+
       - name: Upload alignment sample artifact
         uses: actions/upload-artifact@v4
         with:
           name: danlm_alignment_samples
-          path: tools/danlm_export/work/danlm_alignment_samples.json
+          path: |
+            tools/danlm_export/work/danlm_alignment_samples.json
+            tools/danlm_export/work/danlm_runtime_diagnostics.json
           if-no-files-found: error
