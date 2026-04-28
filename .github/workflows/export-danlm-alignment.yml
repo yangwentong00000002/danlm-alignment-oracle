@@ -26,10 +26,18 @@ jobs:
           uname -a
           python3 --version
 
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
       - name: Install Python dependencies
         run: |
-          python3 -m pip install --upgrade pip
-          python3 -m pip install -r tools/danlm_export/requirements-export.txt
+          python -m venv tools/danlm_export/.venv
+          source tools/danlm_export/.venv/bin/activate
+          python -m pip install --upgrade pip
+          python -m pip install -r tools/danlm_export/requirements-export.txt
+          python -c "import sys; print(sys.version); import torch, numpy; print('torch=' + torch.__version__); print('numpy=' + numpy.__version__)"
 
       - name: Check DanLM resources
         run: |
@@ -40,8 +48,9 @@ jobs:
 
       - name: Export alignment samples
         run: |
+          source tools/danlm_export/.venv/bin/activate
           mkdir -p tools/danlm_export/work
-          PYTHONPATH=. python3 tools/danlm_export/export_danlm_alignment_sample.py \
+          PYTHONPATH=. python tools/danlm_export/export_danlm_alignment_sample.py \
             --danlm-dir res/DanLM-main \
             --checkpoint res/DanLM-main/ckpts/DanLM_v1/dansformer_v1_best_eval.pt \
             --output tools/danlm_export/work/danlm_alignment_samples.json \
