@@ -1,0 +1,5 @@
+.DS_Store
+.venv/
+tools/danlm_export/work/
+__pycache__/
+*.pyc

@@ -1,0 +1,57 @@
+name: Export DanLM Alignment Samples
+
+on:
+  workflow_dispatch:
+    inputs:
+      samples:
+        description: "Number of consecutive greedy play decisions to export"
+        required: true
+        default: "50"
+      seed:
+        description: "DanLM deal seed"
+        required: true
+        default: "20260427"
+
+jobs:
+  export:
+    runs-on: macos-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Show machine info
+        run: |
+          uname -a
+          python3 --version
+
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r tools/danlm_export/requirements-export.txt
+
+      - name: Check DanLM resources
+        run: |
+          test -d res/DanLM-main
+          test -f res/DanLM-main/ckpts/DanLM_v1/dansformer_v1_best_eval.pt
+          ls -lh res/DanLM-main/ckpts/DanLM_v1/
+          ls -lh res/DanLM-main/danzero/encoding/
+
+      - name: Export alignment samples
+        run: |
+          mkdir -p tools/danlm_export/work
+          PYTHONPATH=. python3 tools/danlm_export/export_danlm_alignment_sample.py \
+            --danlm-dir res/DanLM-main \
+            --checkpoint res/DanLM-main/ckpts/DanLM_v1/dansformer_v1_best_eval.pt \
+            --output tools/danlm_export/work/danlm_alignment_samples.json \
+            --samples "${{ inputs.samples }}" \
+            --seed "${{ inputs.seed }}" \
+            --device cpu
+
+      - name: Upload alignment sample artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: danlm_alignment_samples
+          path: tools/danlm_export/work/danlm_alignment_samples.json
+          if-no-files-found: error
