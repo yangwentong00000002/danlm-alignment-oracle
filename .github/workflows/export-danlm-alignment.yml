@@ -1,6 +1,9 @@
 name: Export DanLM Alignment Samples
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
     inputs:
       samples:
@@ -47,6 +50,9 @@ jobs:
           ls -lh res/DanLM-main/danzero/encoding/
 
       - name: Export alignment samples
+        env:
+          DANLM_SAMPLES: ${{ inputs.samples || '50' }}
+          DANLM_SEED: ${{ inputs.seed || '20260427' }}
         run: |
           source tools/danlm_export/.venv/bin/activate
           mkdir -p tools/danlm_export/work
@@ -54,8 +60,8 @@ jobs:
             --danlm-dir res/DanLM-main \
             --checkpoint res/DanLM-main/ckpts/DanLM_v1/dansformer_v1_best_eval.pt \
             --output tools/danlm_export/work/danlm_alignment_samples.json \
-            --samples "${{ inputs.samples }}" \
-            --seed "${{ inputs.seed }}" \
+            --samples "$DANLM_SAMPLES" \
+            --seed "$DANLM_SEED" \
             --device cpu
 
       - name: Upload alignment sample artifact
