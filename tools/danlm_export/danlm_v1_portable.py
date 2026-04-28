@@ -72,11 +72,13 @@ def apply_rope(x: Tensor, rope_cos: Tensor, rope_sin: Tensor) -> Tensor:
     seq_len = x.shape[-2]
     cos = rope_cos[:seq_len].unsqueeze(0).unsqueeze(0).to(dtype=x.dtype)
     sin = rope_sin[:seq_len].unsqueeze(0).unsqueeze(0).to(dtype=x.dtype)
-    even = x[..., 0::2]
-    odd = x[..., 1::2]
-    rotated_even = even * cos - odd * sin
-    rotated_odd = even * sin + odd * cos
-    return torch.stack((rotated_even, rotated_odd), dim=-1).flatten(-2)
+    half = x.shape[-1] // 2
+    first_half = x[..., :half]
+    second_half = x[..., half:]
+    return torch.cat((
+        first_half * cos - second_half * sin,
+        first_half * sin + second_half * cos,
+    ), dim=-1)
 
 
 class GQAttention(nn.Module):

@@ -30,7 +30,7 @@ def parse_args() -> argparse.Namespace:
         default="GuanDan/app/src/main/assets/guandan_ai/danlm_v1.onnx",
         help="Output ONNX path",
     )
-    parser.add_argument("--opset", type=int, default=17)
+    parser.add_argument("--opset", type=int, default=18)
     parser.add_argument("--dummy-seq-len", type=int, default=1280)
     parser.add_argument("--dummy-actions", type=int, default=64)
     return parser.parse_args()
@@ -81,6 +81,7 @@ def main() -> None:
         },
         opset_version=args.opset,
         do_constant_folding=True,
+        external_data=False,
     )
     print(f"exported {output}")
 
